@@ -1,0 +1,10 @@
+name: symbolic_mbrl
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pip==23.1.2
+  - python==3.10.2
+  - pip:
+    - mbrl
+    - torch
