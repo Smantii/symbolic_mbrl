@@ -8,3 +8,4 @@ dependencies:
   - pip:
     - mbrl
     - torch
+    - pygame==2.6.0
