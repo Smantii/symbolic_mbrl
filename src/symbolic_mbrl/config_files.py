@@ -5,7 +5,7 @@ trial_length = 500
 num_trials = 1
 ensemble_size = 7
 
-device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+device_nn = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
 # Everything with "???" indicates an option with a missing value.
 # Our utility functions will fill in these details using the
@@ -14,7 +14,7 @@ cfg_nn_dict = {
     # dynamics model configuration
     "dynamics_model": {
         "_target_": "mbrl.models.GaussianMLP",
-        "device": device,
+        "device": device_nn,
         "num_layers": 4,
         "ensemble_size": ensemble_size,
         "hid_size": 200,
@@ -57,7 +57,7 @@ device = "cpu"
 cfg_sr_dict = {
     # dynamics model configuration
     "dynamics_model": {
-        "_target_": "__main__.SymbolicModel",
+        "_target_": "symbolic_mbrl.symbolic_model.SymbolicModel",
         "symbols": "add,sub,mul,div,constant,variable,sin,exp,abs",
         "population_size": 5000,
         "generations": 10000,
@@ -68,7 +68,7 @@ cfg_sr_dict = {
         "device": device,
         "deterministic": True,
         "propagation_method": None,
-        "num_members": ensemble_size
+        "ensemble_size": ensemble_size
     },
     # options for training the dynamics model
     "algorithm": {
@@ -85,7 +85,7 @@ cfg_sr_dict = {
     }
 }
 
-agent_cfg_dict = {
+agent_cfg_dict_simple1dmpd_sr = {
     # this class evaluates many trajectories and picks the best one
     "_target_": "mbrl.planning.TrajectoryOptimizerAgent",
     "planning_horizon": 3,
@@ -101,6 +101,29 @@ agent_cfg_dict = {
         "population_size": 999,
         "alpha": 0.1,
         "device": device,
+        "lower_bound": "???",
+        "upper_bound": "???",
+        "return_mean_elites": True,
+        "clipped_normal": True
+    }
+}
+
+agent_cfg_dict_simple1dmpd_nn = {
+    # this class evaluates many trajectories and picks the best one
+    "_target_": "mbrl.planning.TrajectoryOptimizerAgent",
+    "planning_horizon": 3,
+    "replan_freq": 1,
+    "verbose": False,
+    "action_lb": "???",
+    "action_ub": "???",
+    # this is the optimizer to generate and choose a trajectory
+    "optimizer_cfg": {
+        "_target_": "mbrl.planning.CEMOptimizer",
+        "num_iterations": 10,
+        "elite_ratio": 0.1,
+        "population_size": 999,
+        "alpha": 0.1,
+        "device": device_nn,
         "lower_bound": "???",
         "upper_bound": "???",
         "return_mean_elites": True,

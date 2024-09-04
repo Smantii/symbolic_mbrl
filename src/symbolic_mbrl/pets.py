@@ -1,22 +1,32 @@
 import mbrl.util.common as common_util
+import mbrl.models as models
+from symbolic_mbrl.symbolic_model import SymbolicModelTrainer
+from functools import partial
 
 
 # def train_callback(_model, _total_calls, _epoch, tr_loss, val_score, _best_val):
-def train_callback(train_losses, val_scores, tr_loss, val_score):
-    train_losses.append(tr_loss)
-    val_scores.append(val_score.mean().item())
+#    train_losses.append(tr_loss)
+#    val_scores.append(val_score.mean().item())
 
 
 def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buffer, method):
-    model_trainer = None
-    # Create a trainer for the model
-    # model_trainer = models.ModelTrainer(dynamics_model, optim_lr=7.5e-4, weight_decay=3e-5)
-    # model_trainer = SymbolicModelTrainer(dynamics_model)
+    if method == "SR":
+        # Create a trainer for the model
+        model_trainer = SymbolicModelTrainer(dynamics_model)
+        train_function = model_trainer.train
+    elif method == "NN":
+        # Create a trainer for the model
+        model_trainer = models.ModelTrainer(
+            dynamics_model, optim_lr=7.5e-4, weight_decay=3e-5)
+        train_function = partial(model_trainer.train, num_epochs=2000,
+                                 patience=25, silent=True)
+    else:
+        raise ValueError("The only usable methods are SR and NN")
+
     # added_data = []
     # Main PETS loop
     all_rewards = [0]
-    for trial in range(num_trials):
-        print(trial)
+    for _ in range(num_trials):
         obs, _ = env.reset()
         agent.reset()
 
@@ -40,34 +50,7 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
 
                 print(dataset_train.num_stored, dataset_val.num_stored)
 
-                # process and standardize the data
-                # X_train = np.hstack((dataset_train.transitions.obs, dataset_train.transitions.act))
-                # X_val = np.hstack((dataset_val.transitions.obs, dataset_val.transitions.act))
-                # y_train = dataset_train.transitions.rewards
-                # y_val = dataset_val.transitions.rewards
-                # mean_X_train = np.mean(X_train, axis = 0)
-                # std_X_train = np.std(X_train, axis = 0)
-                # mean_y_train = np.mean(y_train, axis = 0)
-                # std_y_train = np.std(y_train, axis = 0)
-                # X_train_norm = (X_train - mean_X_train)/std_X_train
-                # y_train_norm = (y_train - mean_y_train)/std_y_train
-                # X_val_norm = (X_val - mean_X_train)/std_X_train
-                # y_val_norm = (y_val - mean_y_train)/std_y_train
-
-                # dynamics_model.model.update_mean_std(mean_X_train, std_X_train, mean_y_train, std_y_train)
-                dynamics_model.model.update_mean_std(0, 1, 0, 1)
-
-                # model_trainer.train(
-                #    dataset_train,
-                #    dataset_val=dataset_val,
-                #   num_epochs=2000,
-                #    patience=25,
-                #    callback=train_callback,
-                #    silent=True)
-
-                # train_r2, val_r2 = model_trainer.train(X_train_norm, y_train_norm, X_val_norm, y_val_norm)
-                train_r2, val_r2 = model_trainer.train(dataset_train, dataset_val)
-                print(train_r2, val_r2)
+                train_function(dataset_train, dataset_val)
 
             # --- Doing env step using the agent and adding to model dataset ---
             next_obs, reward, terminated, _, _ = common_util.step_env_and_add_to_buffer(

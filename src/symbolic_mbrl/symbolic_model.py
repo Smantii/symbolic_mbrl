@@ -6,11 +6,11 @@ from mbrl.models import Ensemble
 
 class SymbolicModel(Ensemble):
     def __init__(self, symbols, population_size, generations, max_length, max_depth, in_size, out_size,
-                 num_members, device, propagation_method, deterministic):
-        super().__init__(num_members, device, propagation_method, deterministic)
+                 ensemble_size, device, propagation_method, deterministic):
+        super().__init__(ensemble_size, device, propagation_method, deterministic)
         self.in_size = in_size
         self.out_size = out_size
-        self.num_members = num_members
+        self.ensemble_size = ensemble_size
         self.reg_next_obs = SymbolicRegressor(population_size=population_size,
                                               allowed_symbols=symbols,
                                               optimizer_iterations=10,

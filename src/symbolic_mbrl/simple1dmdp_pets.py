@@ -2,11 +2,16 @@ import numpy as np
 import torch
 from gymnasium import spaces
 import gymnasium as gym
-from symbolic_mbrl.config_files import cfg_nn_dict, cfg_sr_dict
+from symbolic_mbrl.config_files import *
 import omegaconf
 import mbrl.util.common as common_util
 import mbrl.models as models
 import mbrl.planning as planning
+from symbolic_mbrl.pets import pets
+import matplotlib.pyplot as plt
+import warnings
+
+warnings.filterwarnings("ignore")
 
 
 def reward_fn(a, next_obs):
@@ -59,7 +64,15 @@ class Simple1DMDP(gym.Env):
         print(f"Step: {self.current_step}, State: {self.state}")
 
 
-def main(cfg_dict, agent_cfg_dict, device):
+def main(method, device):
+    # extract the proper cfg files
+    if method == "SR":
+        cfg_dict = cfg_sr_dict
+        agent_cfg_dict = agent_cfg_dict_simple1dmpd_sr
+    elif method == "NN":
+        cfg_dict = cfg_nn_dict
+        agent_cfg_dict = agent_cfg_dict_simple1dmpd_nn
+
     # Register the custom environment
     gym.envs.registration.register(
         id='Simple1DMDP-v0',
@@ -78,10 +91,11 @@ def main(cfg_dict, agent_cfg_dict, device):
 
     cfg = omegaconf.OmegaConf.create(cfg_dict)
     trial_length = cfg.overrides.trial_length
+    ensemble_size = cfg.dynamics_model.ensemble_size
 
     # Create a 1-D dynamics model for this environment
     dynamics_model = common_util.create_one_dim_tr_model(cfg, obs_shape, act_shape)
-    dynamics_model.set_elite([0])
+    dynamics_model.set_elite([0, 1, 2])
 
     # Create a gym-like environment to encapsulate the model
     def term_fn(a, next_obs): return False
@@ -107,3 +121,27 @@ def main(cfg_dict, agent_cfg_dict, device):
         agent_cfg,
         num_particles=20
     )
+
+    pets(env, agent, dynamics_model, 1,
+         cfg, ensemble_size, replay_buffer, method)
+
+    # --- PLOTS ---
+    num_data = 999
+    data = torch.zeros((num_data, 2))
+    data[:, 0] = torch.linspace(-10, 10, num_data)
+    if method == "SR":
+        reward = dynamics_model.model.reg_reward.predict(data)
+    elif method == "NN":
+        dynamics_model.model.eval()
+        with torch.no_grad():
+            reward = dynamics_model.model(
+                data.to("cuda"), propagation_indices=np.arange(num_data))[0][:, 1]
+            reward = reward.to("cpu")
+    plt.plot(data[:, 0], reward, label="Predicted reward")
+    plt.plot(data[:, 0], reward_fn(data[:, 1], data[:, 0]), label="True reward")
+    plt.legend()
+    plt.show()
+
+
+if __name__ == "__main__":
+    main("NN", device_nn)
