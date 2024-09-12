@@ -2,8 +2,8 @@ import torch
 
 # ---- Neural Network params ----
 trial_length = 500
-num_trials = 1
-ensemble_size = 7
+num_trials_nn = 10
+ensemble_size_nn = 7
 
 device_nn = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -16,7 +16,7 @@ cfg_nn_dict = {
         "_target_": "mbrl.models.GaussianMLP",
         "device": device_nn,
         "num_layers": 4,
-        "ensemble_size": ensemble_size,
+        "ensemble_size": ensemble_size_nn,
         "hid_size": 200,
         "in_size": "???",
         "out_size": "???",
@@ -35,7 +35,7 @@ cfg_nn_dict = {
     # these are experiment specific options
     "overrides": {
         "trial_length": trial_length,
-        "num_steps": num_trials * trial_length,
+        "num_steps": num_trials_nn * trial_length,
         "model_batch_size": 256,
         "validation_ratio": 0.05
     }
@@ -46,8 +46,8 @@ cfg_nn_dict = {
 # Symbolic Regression
 
 trial_length = 500
-num_trials = 1
-ensemble_size = 1
+num_trials_sr = 1
+ensemble_size_sr = 1
 
 device = "cpu"
 
@@ -68,7 +68,7 @@ cfg_sr_dict = {
         "device": device,
         "deterministic": True,
         "propagation_method": None,
-        "ensemble_size": ensemble_size
+        "ensemble_size": ensemble_size_sr
     },
     # options for training the dynamics model
     "algorithm": {
@@ -79,7 +79,7 @@ cfg_sr_dict = {
     # these are experiment specific options
     "overrides": {
         "trial_length": trial_length,
-        "num_steps": num_trials * trial_length,
+        "num_steps": num_trials_sr * trial_length,
         "model_batch_size": 1,
         "validation_ratio": 0.05
     }

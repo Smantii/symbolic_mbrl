@@ -23,7 +23,8 @@ class Simple1DMDP(gym.Env):
         super(Simple1DMDP, self).__init__()
 
         # define the action space
-        self.action_space = spaces.Box(low=-1, high=1, shape=(1,), dtype=np.float32)
+        self.action_space = spaces.Box(
+            low=-1, high=1, shape=(1,), dtype=np.float32)
 
         # define the observation space: continuous single dimension for position
         self.observation_space = spaces.Box(
@@ -49,7 +50,8 @@ class Simple1DMDP(gym.Env):
 
         # calculate reward
         # reward = torch.cos(2 * torch.pi * self.state) * torch.exp(torch.abs(self.state) / 3)
-        reward = reward_fn(torch.from_numpy(action), torch.from_numpy(self.state))
+        reward = reward_fn(torch.from_numpy(action),
+                           torch.from_numpy(self.state))
         # increment step counter
         self.current_step += 1
         # check if episode is terminated
@@ -69,9 +71,11 @@ def main(method, device):
     if method == "SR":
         cfg_dict = cfg_sr_dict
         agent_cfg_dict = agent_cfg_dict_simple1dmpd_sr
+        num_trials = num_trials_sr
     elif method == "NN":
         cfg_dict = cfg_nn_dict
         agent_cfg_dict = agent_cfg_dict_simple1dmpd_nn
+        num_trials = num_trials_nn
 
     # Register the custom environment
     gym.envs.registration.register(
@@ -94,7 +98,8 @@ def main(method, device):
     ensemble_size = cfg.dynamics_model.ensemble_size
 
     # Create a 1-D dynamics model for this environment
-    dynamics_model = common_util.create_one_dim_tr_model(cfg, obs_shape, act_shape)
+    dynamics_model = common_util.create_one_dim_tr_model(
+        cfg, obs_shape, act_shape)
     dynamics_model.set_elite([0, 1, 2])
 
     # Create a gym-like environment to encapsulate the model
@@ -102,7 +107,8 @@ def main(method, device):
     model_env = models.ModelEnv(env, dynamics_model, term_fn,
                                 reward_fn, generator=generator)
 
-    replay_buffer = common_util.create_replay_buffer(cfg, obs_shape, act_shape, rng=rng)
+    replay_buffer = common_util.create_replay_buffer(
+        cfg, obs_shape, act_shape, rng=rng)
 
     # generate data
     common_util.rollout_agent_trajectories(
@@ -122,7 +128,7 @@ def main(method, device):
         num_particles=20
     )
 
-    pets(env, agent, dynamics_model, 1,
+    pets(env, agent, dynamics_model, num_trials,
          cfg, ensemble_size, replay_buffer, method)
 
     # --- PLOTS ---
@@ -138,7 +144,8 @@ def main(method, device):
                 data.to("cuda"), propagation_indices=np.arange(num_data))[0][:, 1]
             reward = reward.to("cpu")
     plt.plot(data[:, 0], reward, label="Predicted reward")
-    plt.plot(data[:, 0], reward_fn(data[:, 1], data[:, 0]), label="True reward")
+    plt.plot(data[:, 0], reward_fn(
+        data[:, 1], data[:, 0]), label="True reward")
     plt.legend()
     plt.show()
 
