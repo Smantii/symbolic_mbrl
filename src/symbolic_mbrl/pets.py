@@ -19,7 +19,7 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
         model_trainer = models.ModelTrainer(
             dynamics_model, optim_lr=7.5e-4, weight_decay=3e-5)
         train_function = partial(model_trainer.train, num_epochs=2000,
-                                 patience=25, silent=True)
+                                 patience=0, silent=True)
     else:
         raise ValueError("The only usable methods are SR and NN")
 
@@ -31,9 +31,10 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
         agent.reset()
 
         terminated = False
+        truncated = False
         total_reward = 0.0
         steps_trial = 0
-        while not terminated:
+        while not terminated and not truncated:
             # --------------- Model Training -----------------
             if steps_trial == 0:
                 dynamics_model.update_normalizer(
@@ -48,9 +49,9 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
                     bootstrap_permutes=False,  # build bootstrap dataset using sampling with replacement
                 )
 
-                print(dataset_train.num_stored, dataset_val.num_stored)
-
-                print(train_function(dataset_train, dataset_val))
+                hist_train, hist_val = train_function(
+                    dataset_train, dataset_val)
+                print(hist_train[-1], hist_val[-1])
 
             # --- Doing env step using the agent and adding to model dataset ---
             next_obs, reward, terminated, _, _ = common_util.step_env_and_add_to_buffer(
