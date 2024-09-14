@@ -51,7 +51,7 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
 
                 hist_train, hist_val = train_function(
                     dataset_train, dataset_val)
-                print(hist_train[-1], hist_val[-1])
+                print(hist_train, hist_val)
 
             # --- Doing env step using the agent and adding to model dataset ---
             next_obs, reward, terminated, _, _ = common_util.step_env_and_add_to_buffer(

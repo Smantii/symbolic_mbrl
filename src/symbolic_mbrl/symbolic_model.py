@@ -28,7 +28,8 @@ class SymbolicModel(Ensemble):
 
     def forward(self, x, rng, propagation_indices):
         next_obs = self.reg_next_obs.predict(x)
-        reward = self.reg_reward.predict(x)
+        obs_act_next_obs = np.hstack((x, next_obs.reshape(-1, 1)))
+        reward = self.reg_reward.predict(obs_act_next_obs)
         preds = np.vstack((next_obs, reward)).T
         return torch.from_numpy(preds), None
 
@@ -57,8 +58,11 @@ class SymbolicModelTrainer:
     # def train(self, X_train, y_train, X_val, y_val):
     def train(self, dataset_train, dataset_val):
         X_train = np.hstack((dataset_train.transitions.obs,
-                            dataset_train.transitions.act))
-        X_val = np.hstack((dataset_val.transitions.obs, dataset_val.transitions.act))
+                            dataset_train.transitions.act,
+                            dataset_train.transitions.next_obs))
+        X_val = np.hstack((dataset_val.transitions.obs,
+                          dataset_val.transitions.act,
+                          dataset_val.transitions.next_obs))
         y_train_reward = dataset_train.transitions.rewards
         y_val_reward = dataset_val.transitions.rewards
         y_train_next_obs = dataset_train.transitions.next_obs
@@ -66,11 +70,13 @@ class SymbolicModelTrainer:
         # reshuffling
         p_train = np.random.permutation(len(X_train))
         reg_next_obs = self.dynamics_model.model.reg_next_obs
-        reg_next_obs.fit(X_train[p_train], y_train_next_obs[p_train])
+        reg_next_obs.fit(X_train[p_train, :-1], y_train_next_obs[p_train])
         reg_reward = self.dynamics_model.model.reg_reward
-        # reg_reward.fit(reg_next_obs.predict(X_train[p_train]), y_train_reward[p_train])
-        reg_reward.fit(y_train_next_obs[p_train], y_train_reward[p_train])
+        # reg_reward.fit(reg_next_obs.predict(
+        #    X_train[p_train]), y_train_reward[p_train])
+        # reg_reward.fit(y_train_next_obs[p_train], y_train_reward[p_train])
+        reg_reward.fit(X_train[p_train], y_train_reward[p_train])
 
         print(reg_reward.get_model_string(reg_reward.model_))
         print(reg_next_obs.get_model_string(reg_next_obs.model_))
-        return reg_reward.score(y_train_next_obs, y_train_reward), reg_reward.score(y_val_next_obs, y_val_reward)
+        return reg_reward.score(X_train, y_train_reward), reg_reward.score(X_val, y_val_reward)

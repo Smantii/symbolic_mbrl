@@ -2,8 +2,8 @@ import torch
 
 # ---- Neural Network params ----
 trial_length = 600
-num_trials_nn = 10
-ensemble_size_nn = 1
+num_trials_nn = 1
+ensemble_size_nn = 7
 
 device_nn = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -45,11 +45,11 @@ cfg_nn_dict = {
 # ---- Symbolic Regression params ----
 # Symbolic Regression
 
-trial_length = 500
+trial_length = 600
 num_trials_sr = 1
 ensemble_size_sr = 1
 
-device = "cpu"
+device_sr = "cpu"
 
 # Everything with "???" indicates an option with a missing value.
 # Our utility functions will fill in these details using the
@@ -65,7 +65,7 @@ cfg_sr_dict = {
         "max_depth": 10,
         "in_size": "???",
         "out_size": "???",
-        "device": device,
+        "device": device_sr,
         "deterministic": True,
         "propagation_method": None,
         "ensemble_size": ensemble_size_sr
@@ -81,7 +81,7 @@ cfg_sr_dict = {
         "trial_length": trial_length,
         "num_steps": num_trials_sr * trial_length,
         "model_batch_size": 1,
-        "validation_ratio": 0.05
+        "validation_ratio": 1/6
     }
 }
 
@@ -100,7 +100,7 @@ agent_cfg_dict_simple1dmpd_sr = {
         "elite_ratio": 0.1,
         "population_size": 999,
         "alpha": 0.1,
-        "device": device,
+        "device": device_sr,
         "lower_bound": "???",
         "upper_bound": "???",
         "return_mean_elites": True,

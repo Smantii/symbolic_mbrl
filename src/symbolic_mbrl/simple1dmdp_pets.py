@@ -100,7 +100,7 @@ def main(method, device):
     # Create a 1-D dynamics model for this environment
     dynamics_model = common_util.create_one_dim_tr_model(
         cfg, obs_shape, act_shape)
-    # dynamics_model.set_elite([0, 1, 2])
+    dynamics_model.set_elite([0, 1, 2])
 
     # Create a gym-like environment to encapsulate the model
     def term_fn(a, next_obs): return False
@@ -136,14 +136,15 @@ def main(method, device):
     # --- PLOTS ---
     num_data = 999
     data = torch.zeros((num_data, 2))
-    data[:, 1] = torch.linspace(-10, 10, num_data)
+    data[:, 0] = torch.linspace(-10, 10, num_data)
     if method == "SR":
+        data = torch.hstack((data, data[:, 0].reshape(-1, 1)))
         reward = dynamics_model.model.reg_reward.predict(data)
     elif method == "NN":
         dynamics_model.model.eval()
         with torch.no_grad():
             reward = dynamics_model.model(
-                data.to("cuda"), propagation_indices=torch.arange(num_data))[0][:, 0]
+                data.to("cuda"), propagation_indices=torch.arange(num_data))[0][:, 1]
             reward = reward.to("cpu")
     plt.plot(data[:, 0], reward, label="Predicted reward")
     plt.plot(data[:, 0], reward_fn(
@@ -153,4 +154,4 @@ def main(method, device):
 
 
 if __name__ == "__main__":
-    main("NN", device_nn)
+    main("SR", device_sr)
