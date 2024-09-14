@@ -1,9 +1,8 @@
 import torch
 
 # ---- Neural Network params ----
-trial_length = 600
-num_trials_nn = 1
-ensemble_size_nn = 7
+trial_length = int(5e3)
+num_trials_nn = 10
 
 device_nn = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -16,7 +15,7 @@ cfg_nn_dict = {
         "_target_": "mbrl.models.GaussianMLP",
         "device": device_nn,
         "num_layers": 10,
-        "ensemble_size": ensemble_size_nn,
+        "ensemble_size": 7,
         "hid_size": 200,
         "in_size": "???",
         "out_size": "???",
@@ -28,7 +27,7 @@ cfg_nn_dict = {
     },
     # options for training the dynamics model
     "algorithm": {
-        "learned_rewards": True,
+        "learned_rewards": False,
         "target_is_delta": True,
         "normalize": True,
     },
@@ -37,7 +36,7 @@ cfg_nn_dict = {
         "trial_length": trial_length,
         "num_steps": num_trials_nn * trial_length,
         "model_batch_size": 256,
-        "validation_ratio": 1/6
+        "validation_ratio": 1/5
     }
 }
 
@@ -128,5 +127,28 @@ agent_cfg_dict_simple1dmpd_nn = {
         "upper_bound": "???",
         "return_mean_elites": True,
         "clipped_normal": True
+    }
+}
+
+agent_cfg_dict_cartpole_nn = {
+    # this class evaluates many trajectories and picks the best one
+    "_target_": "mbrl.planning.TrajectoryOptimizerAgent",
+    "planning_horizon": 15,
+    "replan_freq": 1,
+    "verbose": False,
+    "action_lb": "???",
+    "action_ub": "???",
+    # this is the optimizer to generate and choose a trajectory
+    "optimizer_cfg": {
+        "_target_": "mbrl.planning.CEMOptimizer",
+        "num_iterations": 5,
+        "elite_ratio": 0.1,
+        "population_size": 350,
+        "alpha": 0.1,
+        "device": device_nn,
+        "lower_bound": "???",
+        "upper_bound": "???",
+        "return_mean_elites": True,
+        "clipped_normal": False
     }
 }

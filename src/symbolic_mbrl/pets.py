@@ -19,7 +19,8 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
         model_trainer = models.ModelTrainer(
             dynamics_model, optim_lr=7.5e-4, weight_decay=3e-5)
         train_function = partial(model_trainer.train, num_epochs=2000,
-                                 patience=0, silent=True)
+                                 patience=25, silent=True)
+        print(dynamics_model.device)
     else:
         raise ValueError("The only usable methods are SR and NN")
 
@@ -40,6 +41,8 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
                 dynamics_model.update_normalizer(
                     replay_buffer.get_all())  # update normalizer stats
 
+                print(cfg.overrides.model_batch_size)
+
                 dataset_train, dataset_val = common_util.get_basic_buffer_iterators(
                     replay_buffer,
                     batch_size=cfg.overrides.model_batch_size,
@@ -51,7 +54,6 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
 
                 hist_train, hist_val = train_function(
                     dataset_train, dataset_val)
-                print(hist_train, hist_val)
 
             # --- Doing env step using the agent and adding to model dataset ---
             next_obs, reward, terminated, _, _ = common_util.step_env_and_add_to_buffer(
@@ -67,3 +69,4 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
                 break
 
         all_rewards.append(total_reward)
+        print(total_reward)
