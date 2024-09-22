@@ -1,7 +1,8 @@
 import torch
 
 # ---- Neural Network params ----
-trial_length = int(5e3)
+trial_length = 200
+# int(5e4)
 num_trials_nn = 10
 
 device_nn = 'cuda:0' if torch.cuda.is_available() else 'cpu'
@@ -14,8 +15,8 @@ cfg_nn_dict = {
     "dynamics_model": {
         "_target_": "mbrl.models.GaussianMLP",
         "device": device_nn,
-        "num_layers": 10,
-        "ensemble_size": 7,
+        "num_layers": 4,
+        "ensemble_size": 1,
         "hid_size": 200,
         "in_size": "???",
         "out_size": "???",
@@ -36,7 +37,7 @@ cfg_nn_dict = {
         "trial_length": trial_length,
         "num_steps": num_trials_nn * trial_length,
         "model_batch_size": 256,
-        "validation_ratio": 1/5
+        "validation_ratio": 0.05
     }
 }
 

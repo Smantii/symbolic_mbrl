@@ -2,6 +2,7 @@ import mbrl.util.common as common_util
 import mbrl.models as models
 from symbolic_mbrl.symbolic_model import SymbolicModelTrainer
 from functools import partial
+import torch
 
 
 # def train_callback(_model, _total_calls, _epoch, tr_loss, val_score, _best_val):
@@ -20,7 +21,6 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
             dynamics_model, optim_lr=7.5e-4, weight_decay=3e-5)
         train_function = partial(model_trainer.train, num_epochs=2000,
                                  patience=25, silent=True)
-        print(dynamics_model.device)
     else:
         raise ValueError("The only usable methods are SR and NN")
 
@@ -35,13 +35,11 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
         truncated = False
         total_reward = 0.0
         steps_trial = 0
-        while not terminated and not truncated:
+        while not terminated:
             # --------------- Model Training -----------------
             if steps_trial == 0:
                 dynamics_model.update_normalizer(
                     replay_buffer.get_all())  # update normalizer stats
-
-                print(cfg.overrides.model_batch_size)
 
                 dataset_train, dataset_val = common_util.get_basic_buffer_iterators(
                     replay_buffer,
@@ -64,6 +62,8 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
             obs = next_obs
             total_reward += reward
             steps_trial += 1
+
+            print(next_obs, reward, terminated, steps_trial)
 
             if steps_trial == cfg.overrides.trial_length:
                 break
