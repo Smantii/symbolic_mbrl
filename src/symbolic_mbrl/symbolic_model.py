@@ -6,31 +6,31 @@ from mbrl.models import Ensemble
 
 class SymbolicModel(Ensemble):
     def __init__(self, symbols, population_size, generations, max_length, max_depth, in_size, out_size,
-                 ensemble_size, device, propagation_method, deterministic):
+                 ensemble_size, device, propagation_method, deterministic, learn_reward):
         super().__init__(ensemble_size, device, propagation_method, deterministic)
         self.in_size = in_size
         self.out_size = out_size
         self.ensemble_size = ensemble_size
-        self.reg_next_obs = SymbolicRegressor(population_size=population_size,
-                                              allowed_symbols=symbols,
-                                              optimizer_iterations=10,
-                                              generations=generations,
-                                              n_threads=32,
-                                              max_length=max_length,
-                                              max_depth=max_depth)
-        self.reg_reward = SymbolicRegressor(population_size=population_size,
-                                            allowed_symbols=symbols,
-                                            optimizer_iterations=10,
-                                            generations=generations,
-                                            n_threads=32,
-                                            max_length=max_length,
-                                            max_depth=max_depth)
+        self.learn_reward = learn_reward
+        sr_params = {'population_size': population_size,
+                     'allowed_symbols': symbols,
+                     'optimizer_iterations': 10,
+                     'generations': generations,
+                     'n_threads': 32,
+                     'max_length': max_length,
+                     'max_depth': max_depth}
+        self.reg_next_obs = SymbolicRegressor(**sr_params)
+        if self.learn_reward:
+            self.reg_reward = SymbolicRegressor(**sr_params)
 
     def forward(self, x, rng, propagation_indices):
         next_obs = self.reg_next_obs.predict(x)
-        obs_act_next_obs = np.hstack((x, next_obs.reshape(-1, 1)))
-        reward = self.reg_reward.predict(obs_act_next_obs)
-        preds = np.vstack((next_obs, reward)).T
+        if self.learn_reward:
+            obs_act_next_obs = np.hstack((x, next_obs.reshape(-1, 1)))
+            reward = self.reg_reward.predict(obs_act_next_obs)
+            preds = np.vstack((next_obs, reward)).T
+        else:
+            preds = next_obs
         return torch.from_numpy(preds), None
 
     def loss(self, model_in, target):
