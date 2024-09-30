@@ -88,10 +88,24 @@
 \section{Introduction}
 
 \section{Model-Based Reinforcement Learning}
+Reinforcement Learning (RL), contrarily to standard Supervised Learning, requires a continue interaction with data to update the policy. Usually, model-free RL is employed to optimize the policy, where the agent can only use the data sampled interacting with the real environment. In particular, RL algorithms with high sample complexity are non-manageable in a real-world scenario due to its cost. An alternative is presented by the so-called Model-Based Reinforcement Learning (MBRL) \textcolor{red}{cit}, where apart from optimizing policy the environment model must be learned. In real-world scenario, having an environment model drastically reduces the complexity of generating new training samples for RL algorithms.
+In the following, we briefly overview the main components of MBRL. A more extensive treatment can be found in \textcolor{red}{put all the paper of MBRL}. 
 
-\section{Experiments and Implementations details}
+MBRL restates the problem as a Markov Decision Process (MDP) \cite{puterman2014}. A MDP is a tuple $\{\mathcal{S}, \mathcal{A}, \mathcal{T}, \mathcal{R}, p(s_0), \gamma\}$, \textcolor{red}{continue from Model-Based Reinforcement Learning: A Survey}.
 
+\section{Symbolic Regression}
 
+\section{Experiments and implementations details}
+
+\section{Conclusion and discussion}
+
+\section*{References}
+
+\bibliographystyle{ieeetr}
+\begin{thebibliography}{10}
+	\bibitem{puterman2014}
+	M. L.~Puterman, ``Markov Decision Processes: Discrete Stochastic Dynamic Pro-
+	gramming.'' {\em John Wiley and sons}, 2014.
 	
-	
+\end{thebibliography}
 \end{document}
