@@ -1,9 +1,8 @@
 import torch
 
 # ---- Neural Network params ----
-trial_length = 200
-# int(5e4)
-num_trials_nn = 10
+trial_length = 600
+num_trials_nn = 1
 
 device_nn = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -16,7 +15,7 @@ cfg_nn_dict = {
         "_target_": "mbrl.models.GaussianMLP",
         "device": device_nn,
         "num_layers": 4,
-        "ensemble_size": 1,
+        "ensemble_size": 7,
         "hid_size": 200,
         "in_size": "???",
         "out_size": "???",
@@ -28,7 +27,7 @@ cfg_nn_dict = {
     },
     # options for training the dynamics model
     "algorithm": {
-        "learned_rewards": False,
+        "learned_rewards": True,
         "target_is_delta": True,
         "normalize": True,
     },
@@ -37,7 +36,8 @@ cfg_nn_dict = {
         "trial_length": trial_length,
         "num_steps": num_trials_nn * trial_length,
         "model_batch_size": 256,
-        "validation_ratio": 0.05
+        "validation_ratio": 1/6
+        # 0.05
     }
 }
 
@@ -61,14 +61,15 @@ cfg_sr_dict = {
         "symbols": "add,sub,mul,div,constant,variable,sin,exp,abs",
         "population_size": 5000,
         "generations": 10000,
-        "max_length": 50,
+        "max_length": 20,
         "max_depth": 10,
         "in_size": "???",
         "out_size": "???",
         "device": device_sr,
         "deterministic": True,
         "propagation_method": None,
-        "ensemble_size": ensemble_size_sr
+        "ensemble_size": ensemble_size_sr,
+        "learn_reward": True
     },
     # options for training the dynamics model
     "algorithm": {

@@ -133,10 +133,10 @@ def main(method, device):
     pets(env, agent, dynamics_model, num_trials,
          cfg, ensemble_size, replay_buffer, method)
 
-    # --- PLOTS ---
-    num_data = 999
-    data = torch.zeros((num_data, 2))
-    data[:, 0] = torch.linspace(-10, 10, num_data)
+    return dynamics_model
+
+
+def compute_final_reward(data, method, dynamics_model):
     if method == "SR":
         data = torch.hstack((data, data[:, 0].reshape(-1, 1)))
         reward = dynamics_model.model.reg_reward.predict(data)
@@ -146,12 +146,37 @@ def main(method, device):
             reward = dynamics_model.model(
                 data.to("cuda"), propagation_indices=torch.arange(num_data))[0][:, 1]
             reward = reward.to("cpu")
-    plt.plot(data[:, 0], reward, label="Predicted reward")
-    plt.plot(data[:, 0], reward_fn(
-        data[:, 1], data[:, 0]), label="True reward")
-    plt.legend()
-    plt.show()
+    return reward
 
 
 if __name__ == "__main__":
-    main("SR", device_sr)
+    dynamics_model_sr = main("SR", device_sr)
+    dynamics_model_nn = main("NN", device_nn)
+    num_data = 999
+    data = torch.zeros((num_data, 2))
+    data[:, 0] = torch.linspace(-10, 10, num_data)
+    reward_sr = compute_final_reward(data, "SR", dynamics_model_sr)
+    reward_nn = compute_final_reward(data, "NN", dynamics_model_nn)
+    # --- PLOTS ---
+    width = 443.57848
+    fontsize = 8
+    plt.rcParams['font.size'] = fontsize
+    plt.rcParams['font.sans-serif'] = 'Dejavu Sans'
+    plt.rcParams['font.family'] = 'sans-serif'
+
+    # Convert from pt to inches
+    inches_per_pt = 1 / 72.27
+    # Figure width in inches
+    fig_width_in = width * inches_per_pt
+
+    fig_dim = (fig_width_in, 3.3)
+
+    fig = plt.figure(figsize=fig_dim)
+    plt.plot(data[:, 0], reward_fn(
+        data[:, 1], data[:, 0]), label="True", c="#377eb8")
+    plt.plot(data[:, 0], reward_sr, label="SR-Pets", c="#e41a1c")
+    plt.plot(data[:, 0], reward_nn, label="NN-Pets", c="#4daf4a")
+    plt.legend()
+    plt.xlabel("s_t")
+    plt.ylabel("Reward")
+    plt.savefig("simple1dmp_pets.pdf", dpi=300)
