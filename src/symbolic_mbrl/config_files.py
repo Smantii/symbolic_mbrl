@@ -1,8 +1,8 @@
 import torch
 
 # ---- Neural Network params ----
-trial_length = 600
-num_trials_nn = 1
+trial_length = 20
+num_trials_nn = 100
 
 device_nn = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -27,7 +27,7 @@ cfg_nn_dict = {
     },
     # options for training the dynamics model
     "algorithm": {
-        "learned_rewards": True,
+        "learned_rewards": False,
         "target_is_delta": True,
         "normalize": True,
     },
@@ -36,9 +36,7 @@ cfg_nn_dict = {
         "trial_length": trial_length,
         "num_steps": num_trials_nn * trial_length,
         "model_batch_size": 256,
-        "validation_ratio": 1/6
-        # 0.05
-    }
+        "validation_ratio": 0.2}
 }
 
 
@@ -128,7 +126,7 @@ agent_cfg_dict_simple1dmpd_nn = {
         "lower_bound": "???",
         "upper_bound": "???",
         "return_mean_elites": True,
-        "clipped_normal": True
+        "clipped_normal": False
     }
 }
 
