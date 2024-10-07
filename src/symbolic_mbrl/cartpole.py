@@ -13,12 +13,13 @@ from symbolic_mbrl.pets import pets
 def main(method, device):
     # extract the proper cfg files
     if method == "SR":
-        assert False
+        cfg_dict = cfg_sr_dict
+        num_trials = num_trials_sr
     elif method == "NN":
         cfg_dict = cfg_nn_dict
-        agent_cfg_dict = agent_cfg_dict_cartpole_nn
         num_trials = num_trials_nn
 
+    agent_cfg_dict = agent_cfg_dict_cartpole
     seed = 0
     env = cartpole_env.CartPoleEnv(render_mode="rgb_array")
     env.reset(seed)
@@ -75,4 +76,4 @@ def main(method, device):
 
 
 if __name__ == "__main__":
-    main("NN", device_nn)
+    main("SR", device_sr)

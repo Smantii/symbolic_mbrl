@@ -43,8 +43,8 @@ cfg_nn_dict = {
 # ---- Symbolic Regression params ----
 # Symbolic Regression
 
-trial_length = 600
-num_trials_sr = 1
+trial_length = 20
+num_trials_sr = 10
 ensemble_size_sr = 1
 
 device_sr = "cpu"
@@ -56,10 +56,10 @@ cfg_sr_dict = {
     # dynamics model configuration
     "dynamics_model": {
         "_target_": "symbolic_mbrl.symbolic_model.SymbolicModel",
-        "symbols": "add,sub,mul,div,constant,variable,sin,exp,abs",
-        "population_size": 5000,
-        "generations": 10000,
-        "max_length": 20,
+        "symbols": "add,sub,mul,div,constant,variable,sin,cos,pow",
+        "population_size": 1000,
+        "generations": 100,
+        "max_length": 25,
         "max_depth": 10,
         "in_size": "???",
         "out_size": "???",
@@ -67,11 +67,11 @@ cfg_sr_dict = {
         "deterministic": True,
         "propagation_method": None,
         "ensemble_size": ensemble_size_sr,
-        "learn_reward": True
+        "learn_reward": False
     },
     # options for training the dynamics model
     "algorithm": {
-        "learned_rewards": True,
+        "learned_rewards": False,
         "target_is_delta": True,
         "normalize": True,
     },
@@ -80,11 +80,11 @@ cfg_sr_dict = {
         "trial_length": trial_length,
         "num_steps": num_trials_sr * trial_length,
         "model_batch_size": 1,
-        "validation_ratio": 1/6
+        "validation_ratio": 0.2
     }
 }
 
-agent_cfg_dict_simple1dmpd_sr = {
+agent_cfg_dict_simple1dmpd = {
     # this class evaluates many trajectories and picks the best one
     "_target_": "mbrl.planning.TrajectoryOptimizerAgent",
     "planning_horizon": 3,
@@ -99,7 +99,7 @@ agent_cfg_dict_simple1dmpd_sr = {
         "elite_ratio": 0.1,
         "population_size": 999,
         "alpha": 0.1,
-        "device": device_sr,
+        "device": device_nn,  # change this value in the experiment script
         "lower_bound": "???",
         "upper_bound": "???",
         "return_mean_elites": True,
@@ -107,30 +107,7 @@ agent_cfg_dict_simple1dmpd_sr = {
     }
 }
 
-agent_cfg_dict_simple1dmpd_nn = {
-    # this class evaluates many trajectories and picks the best one
-    "_target_": "mbrl.planning.TrajectoryOptimizerAgent",
-    "planning_horizon": 3,
-    "replan_freq": 1,
-    "verbose": False,
-    "action_lb": "???",
-    "action_ub": "???",
-    # this is the optimizer to generate and choose a trajectory
-    "optimizer_cfg": {
-        "_target_": "mbrl.planning.CEMOptimizer",
-        "num_iterations": 10,
-        "elite_ratio": 0.1,
-        "population_size": 999,
-        "alpha": 0.1,
-        "device": device_nn,
-        "lower_bound": "???",
-        "upper_bound": "???",
-        "return_mean_elites": True,
-        "clipped_normal": False
-    }
-}
-
-agent_cfg_dict_cartpole_nn = {
+agent_cfg_dict_cartpole = {
     # this class evaluates many trajectories and picks the best one
     "_target_": "mbrl.planning.TrajectoryOptimizerAgent",
     "planning_horizon": 15,
@@ -145,7 +122,7 @@ agent_cfg_dict_cartpole_nn = {
         "elite_ratio": 0.1,
         "population_size": 350,
         "alpha": 0.1,
-        "device": device_nn,
+        "device": device_sr,  # change this value in the experiment script
         "lower_bound": "???",
         "upper_bound": "???",
         "return_mean_elites": True,

@@ -46,10 +46,10 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
                     shuffle_each_epoch=True,
                     bootstrap_permutes=False,  # build bootstrap dataset using sampling with replacement
                 )
-                print(dataset_train.transitions.act.shape)
 
                 hist_train, hist_val = train_function(
                     dataset_train, dataset_val)
+                print(hist_train, hist_val)
 
             if steps_trial <= 10:
                 # --- Doing env step using the agent and adding to model dataset ---
@@ -66,6 +66,7 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
             total_reward += reward
             steps_trial += 1
 
+            # if steps_trial == cfg.overrides.trial_length:
             if steps_trial == 200:
                 break
 

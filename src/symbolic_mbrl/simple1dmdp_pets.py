@@ -70,13 +70,12 @@ def main(method, device):
     # extract the proper cfg files
     if method == "SR":
         cfg_dict = cfg_sr_dict
-        agent_cfg_dict = agent_cfg_dict_simple1dmpd_sr
         num_trials = num_trials_sr
     elif method == "NN":
         cfg_dict = cfg_nn_dict
-        agent_cfg_dict = agent_cfg_dict_simple1dmpd_nn
         num_trials = num_trials_nn
 
+    agent_cfg_dict = agent_cfg_dict_simple1dmpd
     # Register the custom environment
     gym.envs.registration.register(
         id='Simple1DMDP-v0',
