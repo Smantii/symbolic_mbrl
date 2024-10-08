@@ -1,8 +1,8 @@
 import torch
 
 # ---- Neural Network params ----
-trial_length = 20
-num_trials_nn = 100
+trial_length = int(5e2)
+num_trials_nn = 10
 
 device_nn = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
@@ -15,7 +15,7 @@ cfg_nn_dict = {
         "_target_": "mbrl.models.GaussianMLP",
         "device": device_nn,
         "num_layers": 4,
-        "ensemble_size": 7,
+        "ensemble_size": 1,
         "hid_size": 200,
         "in_size": "???",
         "out_size": "???",
@@ -36,14 +36,14 @@ cfg_nn_dict = {
         "trial_length": trial_length,
         "num_steps": num_trials_nn * trial_length,
         "model_batch_size": 256,
-        "validation_ratio": 0.2}
+        "validation_ratio": 1-0.02}
 }
 
 
 # ---- Symbolic Regression params ----
 # Symbolic Regression
 
-trial_length = 20
+trial_length = int(5e3)
 num_trials_sr = 10
 ensemble_size_sr = 1
 
@@ -56,10 +56,10 @@ cfg_sr_dict = {
     # dynamics model configuration
     "dynamics_model": {
         "_target_": "symbolic_mbrl.symbolic_model.SymbolicModel",
-        "symbols": "add,sub,mul,div,constant,variable,sin,cos,pow",
+        "symbols": "add,sub,mul,div,constant,variable,sin,cos,square",
         "population_size": 1000,
         "generations": 100,
-        "max_length": 25,
+        "max_length": 20,
         "max_depth": 10,
         "in_size": "???",
         "out_size": "???",
@@ -73,14 +73,14 @@ cfg_sr_dict = {
     "algorithm": {
         "learned_rewards": False,
         "target_is_delta": True,
-        "normalize": True,
+        "normalize": False,
     },
     # these are experiment specific options
     "overrides": {
         "trial_length": trial_length,
         "num_steps": num_trials_sr * trial_length,
         "model_batch_size": 1,
-        "validation_ratio": 0.2
+        "validation_ratio": 1-0.002
     }
 }
 
@@ -126,6 +126,6 @@ agent_cfg_dict_cartpole = {
         "lower_bound": "???",
         "upper_bound": "???",
         "return_mean_elites": True,
-        "clipped_normal": False
+        "clipped_normal": True
     }
 }

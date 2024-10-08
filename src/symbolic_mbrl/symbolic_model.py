@@ -12,13 +12,22 @@ class SymbolicModel(Ensemble):
         self.out_size = out_size
         self.ensemble_size = ensemble_size
         self.learn_reward = learn_reward
-        sr_params = {'population_size': population_size,
-                     'allowed_symbols': symbols,
+        self.population_size = population_size
+        self.symbols = symbols
+        self.generations = generations
+        self.max_length = max_length
+        self.max_depth = max_depth
+        self._init_regressors()
+
+    def _init_regressors(self):
+        sr_params = {'population_size': self.population_size,
+                     'allowed_symbols': self.symbols,
                      'optimizer_iterations': 10,
-                     'generations': generations,
+                     'generations': self.generations,
                      'n_threads': 32,
-                     'max_length': max_length,
-                     'max_depth': max_depth}
+                     'max_length': self.max_length,
+                     'max_depth': self.max_depth,
+                     "objectives": ["r2"]}
         self.reg_next_obs = []
         for _ in range(self.out_size):
             self.reg_next_obs.append(SymbolicRegressor(**sr_params))
@@ -59,8 +68,8 @@ class SymbolicModelTrainer:
     def __init__(self, dynamics_model: SymbolicModel):
         self.dynamics_model = dynamics_model
 
-    # def train(self, X_train, y_train, X_val, y_val):
     def train(self, dataset_train, dataset_val):
+        # self.dynamics_model.model._init_regressors()
         train_scores = []
         val_scores = []
         out_size = self.dynamics_model.model.out_size

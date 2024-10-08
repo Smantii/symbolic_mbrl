@@ -22,16 +22,25 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
                                  patience=25, silent=True)
     else:
         raise ValueError("The only usable methods are SR and NN")
-    # added_data = []
     # Main PETS loop
     all_rewards = [0]
-    for _ in range(num_trials):
+    num_data_to_be_added = 10
+    for i in range(num_trials):
         obs, _ = env.reset()
         agent.reset()
 
         terminated = False
         total_reward = 0.0
         steps_trial = 0
+        if i == 0:
+            data_length = cfg.overrides.trial_length
+            val_ratio = cfg.overrides.validation_ratio
+            train_length = (1-val_ratio)*data_length
+
+        else:
+            train_length += num_data_to_be_added
+            data_length += num_data_to_be_added
+            val_ratio = 1 - train_length / data_length
         while not terminated:
             # --------------- Model Training -----------------
             if steps_trial == 0:
@@ -41,26 +50,26 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
                 dataset_train, dataset_val = common_util.get_basic_buffer_iterators(
                     replay_buffer,
                     batch_size=cfg.overrides.model_batch_size,
-                    val_ratio=cfg.overrides.validation_ratio,
+                    val_ratio=val_ratio,
                     ensemble_size=ensemble_size,
                     shuffle_each_epoch=True,
                     bootstrap_permutes=False,  # build bootstrap dataset using sampling with replacement
                 )
 
+                print(dataset_train.transitions.obs.shape,
+                      dataset_val.transitions.obs.shape)
                 hist_train, hist_val = train_function(
                     dataset_train, dataset_val)
                 print(hist_train, hist_val)
 
-            if steps_trial <= 10:
+            if steps_trial <= num_data_to_be_added:
                 # --- Doing env step using the agent and adding to model dataset ---
                 next_obs, reward, terminated, _, _ = common_util.step_env_and_add_to_buffer(
                     env, obs, agent, {}, replay_buffer)
             else:
                 action = agent.act(obs)
-                next_obs, reward, terminated, truncated, info = env.step(
+                next_obs, reward, terminated, _, _ = env.step(
                     action)
-
-            # added_data.append([next_obs, reward, terminated, truncated])
 
             obs = next_obs
             total_reward += reward
