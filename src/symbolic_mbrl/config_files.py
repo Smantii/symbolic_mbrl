@@ -1,10 +1,11 @@
 import torch
 
 # ---- Neural Network params ----
-trial_length = int(5e2)
+trial_length = int(5e1)
 num_trials_nn = 10
 
 device_nn = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+# device_nn = 'cpu'
 
 # Everything with "???" indicates an option with a missing value.
 # Our utility functions will fill in these details using the
@@ -28,7 +29,7 @@ cfg_nn_dict = {
     # options for training the dynamics model
     "algorithm": {
         "learned_rewards": False,
-        "target_is_delta": True,
+        "target_is_delta": False,
         "normalize": True,
     },
     # these are experiment specific options
@@ -36,14 +37,14 @@ cfg_nn_dict = {
         "trial_length": trial_length,
         "num_steps": num_trials_nn * trial_length,
         "model_batch_size": 256,
-        "validation_ratio": 1-0.02}
+        "validation_ratio": 1-0.2}
 }
 
 
 # ---- Symbolic Regression params ----
 # Symbolic Regression
 
-trial_length = int(5e3)
+trial_length = int(5e1)
 num_trials_sr = 10
 ensemble_size_sr = 1
 
@@ -57,9 +58,9 @@ cfg_sr_dict = {
     "dynamics_model": {
         "_target_": "symbolic_mbrl.symbolic_model.SymbolicModel",
         "symbols": "add,sub,mul,div,constant,variable,sin,cos,square",
-        "population_size": 1000,
-        "generations": 100,
-        "max_length": 20,
+        "population_size": 5000,
+        "generations": 10000,
+        "max_length": 50,
         "max_depth": 10,
         "in_size": "???",
         "out_size": "???",
@@ -72,7 +73,7 @@ cfg_sr_dict = {
     # options for training the dynamics model
     "algorithm": {
         "learned_rewards": False,
-        "target_is_delta": True,
+        "target_is_delta": False,  # because pred_t = model(obs_t, act_t)
         "normalize": False,
     },
     # these are experiment specific options
@@ -80,7 +81,7 @@ cfg_sr_dict = {
         "trial_length": trial_length,
         "num_steps": num_trials_sr * trial_length,
         "model_batch_size": 1,
-        "validation_ratio": 1-0.002
+        "validation_ratio": 1-0.2
     }
 }
 
@@ -122,7 +123,7 @@ agent_cfg_dict_cartpole = {
         "elite_ratio": 0.1,
         "population_size": 350,
         "alpha": 0.1,
-        "device": device_sr,  # change this value in the experiment script
+        "device": device_nn,  # change this value in the experiment script
         "lower_bound": "???",
         "upper_bound": "???",
         "return_mean_elites": True,

@@ -76,4 +76,4 @@ def main(method, device):
 
 
 if __name__ == "__main__":
-    main("SR", device_sr)
+    main("NN", device_nn)

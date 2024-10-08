@@ -60,7 +60,7 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
                       dataset_val.transitions.obs.shape)
                 hist_train, hist_val = train_function(
                     dataset_train, dataset_val)
-                print(hist_train, hist_val)
+                # print(hist_train, hist_val)
 
             if steps_trial <= num_data_to_be_added:
                 # --- Doing env step using the agent and adding to model dataset ---
@@ -74,6 +74,7 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
             obs = next_obs
             total_reward += reward
             steps_trial += 1
+            print(total_reward)
 
             # if steps_trial == cfg.overrides.trial_length:
             if steps_trial == 200:
