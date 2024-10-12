@@ -124,28 +124,47 @@ Instead, the most common mutation creates an offspring for a given parent tree b
 
 
 \subsection{Simple 1-dimensional MDP}
+\label{sec: simple_1_dmdp}
 The following simple 1-dimensional MDP, with episode length 10, is considered
 \begin{align}
 	&s_{t+1} := s_t + a_t, \label{eq: simple_1dmpd_dynamics}\\ 
 	&r_t := \cos(2\pi s_{t+1})\exp(|s_{t+1}|/3). \label{eq: simple_1dmpd_reward}
 \end{align}
 
-In this case, the goal is learning both the dynamics \eqref{eq: simple_1dmpd_dynamics} and the reward function \eqref{eq: simple_1dmpd_reward}. \textcolor{red}{Continue from here}
+In this case, the goal is learning both the dynamics eq.~\eqref{eq: simple_1dmpd_dynamics} and the reward function eq.~\eqref{eq: simple_1dmpd_reward}. \textcolor{red}{add details on training data used}
 
+\paragraph{SR hyperparameters} The following hyperparameters are used: 10 optimizer iterations, population size 5000, 10000 generations, \texttt{add,sub,mul,div,constant,variable,} \texttt{sin,exp,abs} as allowed symbols and 32 threads. Note that to complicate the problem \texttt{cos} is not in the primitive set.
+
+\paragraph{NN hyperparameters} A standard Multi-Layer Perceptron (MLP) is considered with the following hyperparameters: 4 hidden layers with 200 nodes each, SiLU activation function, Adam optimizer with 2000 epochs, batch size 256, patience epochs 25, learning rate $7.5e-4$ and weight decay $3e-5$.
+
+\paragraph{Results} Figure~\ref{fig: simple_1dmdp} demonstrates that SR learned solution generalizes better outside the training region, while the NN model overfits in the training distribution. SR learned the following models (rounded to the first $3$ decimal digits):
 \begin{align}
-	&s_{t+1} := s_t + a_t,\\
-	&r_t := 1.0\exp(|0.333s_{t+1}|)\sin(6.283s_{t+1} - |-0.023 s_t + \sin(0.023 s_t) + 1.571|)
+	&s_{t+1} = 1.0s_t + 1.0a_t, \label{eq: sr_simple_1dmdp_dynamics}\\
+	&r_t = 1.0\exp(|0.333s_{t+1}|)\sin(6.283s_{t+1} - |-0.023 s_t + \sin(0.023 s_t) + 1.571|).\label{eq: sr_simple_1dmdp_reward}
 \end{align}
 
+Note that eq.~\eqref{eq: simple_1dmpd_dynamics} coincides with eq.~\eqref{eq: simple_1dmpd_dynamics}, while eq.~\eqref{eq: sr_simple_1dmdp_reward} is slightly different than eq.~\eqref{eq: simple_1dmpd_reward}. However, the first of the two factors matches completely with the ground truth, while the latter is approximately $\sin(2\pi s_{t+1} + 1.571)$ using that $6.283\approx 2\pi$ and that $sin(x) \approx x$ for $x>0$ sufficiently small. A similar model for the reward function was also found in the original paper \cite{kamienny2022symbolic}.
 
 \begin{figure}
 	\centering
 	\includegraphics{simple1dmdp_pets.pdf}
-	\caption{??}
+	\caption{Reward function, evaluated with $a_t=0$, predicted by the learned models}
 	\label{fig: simple_1dmdp}
 \end{figure}
 
 \subsection{Cartpole}
+
+\begin{align}
+	&\ddot{\theta} = \frac{g\sin(\theta) + \cos(\theta)\left(\frac{-K_{\rm mag} a - m_p l \dot{\theta}^2\sin(\theta)}{m_c + m_p}\right)}{l\left(\frac{4}{3} - \frac{m_p\cos^2(\theta)}{m_c+m_p}\right)}\\
+	& \ddot{x} = \frac{K_{\rm mag} a + m_pl(\dot{\theta}^2\sin(\theta) - \ddot{\theta}\cos(\theta))}{m_c + m_p}
+\end{align}
+
+
+\paragraph{SR hyperparameters} As in \ref{sec: simple_1_dmdp} but with allowed symbols \texttt{add,sub,mul,div,constant,} \texttt{variable,sin,cos,pow}.
+
+\paragraph{NN hyperparameters} As in \ref{sec: simple_1_dmdp}.
+
+\paragraph{Results}
 
 
 \section{Conclusion and discussion}
@@ -153,6 +172,10 @@ In this case, the goal is learning both the dynamics \eqref{eq: simple_1dmpd_dyn
 
 \bibliographystyle{ieeetr}
 \begin{thebibliography}{10}
+	\bibitem{kamienny2022symbolic}
+	P.A.~Kamienny, S.~Lamprier, ``Symbolic-Model-Based Reinforcement Learning''.
+	{\em NeurIPS 2022 AI for Science: Progress and Promises}, 2022.
+	
 	\bibitem{puterman2014}
 	M. L.~Puterman, ``Markov Decision Processes: Discrete Stochastic Dynamic Pro-
 	gramming.'' {\em John Wiley and sons}, 2014.

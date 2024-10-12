@@ -71,11 +71,25 @@ def main(method, device):
         num_particles=20
     )
 
-    all_rewards = pets(env, agent, dynamics_model, num_trials,
-                       cfg, ensemble_size, replay_buffer, method)
+    all_rewards, all_mse = pets(env, agent, dynamics_model, num_trials,
+                                cfg, ensemble_size, replay_buffer, method)
 
-    return all_rewards
+    return all_rewards, all_mse
 
 
 if __name__ == "__main__":
-    main("SR", device_sr)
+    num_runs = 3
+
+    all_reward_sr = np.zeros((10, num_runs))
+    all_reward_nn = np.zeros((10, num_runs))
+    all_mse_sr = np.zeros((10, num_runs))
+    all_mse_nn = np.zeros((10, num_runs))
+
+    for i in range(num_runs):
+        all_reward_sr[:, i], all_mse_sr[:, i] = main("SR", device_sr)
+        all_reward_nn[:, i], all_mse_nn[:, i] = main("NN", device_nn)
+
+    np.save("cartpole_rewards_sr.npy", all_reward_sr)
+    np.save("cartpole_mse_sr.npy", all_mse_sr)
+    np.save("cartpole_rewards_nn.npy", all_reward_nn)
+    np.save("cartpole_mse_nn.npy", all_mse_nn)

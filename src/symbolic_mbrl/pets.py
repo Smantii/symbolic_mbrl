@@ -2,11 +2,7 @@ import mbrl.util.common as common_util
 import mbrl.models as models
 from symbolic_mbrl.symbolic_model import SymbolicModelTrainer
 from functools import partial
-
-
-# def train_callback(_model, _total_calls, _epoch, tr_loss, val_score, _best_val):
-#    train_losses.append(tr_loss)
-#    val_scores.append(val_score.mean().item())
+import numpy as np
 
 
 def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buffer, method):
@@ -23,7 +19,8 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
     else:
         raise ValueError("The only usable methods are SR and NN")
     # Main PETS loop
-    all_rewards = [0]
+    all_rewards = []
+    all_mse = []
     num_data_to_be_added = 10
     for i in range(num_trials):
         obs, _ = env.reset()
@@ -56,9 +53,12 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
                     bootstrap_permutes=False,  # build bootstrap dataset using sampling with replacement
                 )
 
-                hist_train, hist_val = train_function(
+                _, hist_val = train_function(
                     dataset_train, dataset_val)
-                print(hist_train, hist_val)
+                if method == "SR":
+                    all_mse.append(np.mean(hist_val))
+                elif method == "NN":
+                    all_mse.append(hist_val[-1])
 
             if steps_trial <= num_data_to_be_added:
                 # --- Doing env step using the agent and adding to model dataset ---
@@ -79,4 +79,4 @@ def pets(env, agent, dynamics_model, num_trials, cfg, ensemble_size, replay_buff
 
         all_rewards.append(total_reward)
         print(total_reward)
-    return all_rewards
+    return all_rewards, all_mse
