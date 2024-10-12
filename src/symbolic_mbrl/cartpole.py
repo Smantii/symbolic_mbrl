@@ -15,11 +15,13 @@ def main(method, device):
     if method == "SR":
         cfg_dict = cfg_sr_dict
         num_trials = num_trials_sr
+
     elif method == "NN":
         cfg_dict = cfg_nn_dict
         num_trials = num_trials_nn
 
     agent_cfg_dict = agent_cfg_dict_cartpole
+    agent_cfg_dict["optimizer_cfg"]["device"] = device
     seed = 0
     env = cartpole_env.CartPoleEnv(render_mode="rgb_array")
     env.reset(seed)
@@ -69,11 +71,11 @@ def main(method, device):
         num_particles=20
     )
 
-    pets(env, agent, dynamics_model, num_trials,
-         cfg, ensemble_size, replay_buffer, method)
+    all_rewards = pets(env, agent, dynamics_model, num_trials,
+                       cfg, ensemble_size, replay_buffer, method)
 
-    # --- PLOTS ---
+    return all_rewards
 
 
 if __name__ == "__main__":
-    main("NN", device_nn)
+    main("SR", device_sr)

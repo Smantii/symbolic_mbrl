@@ -129,8 +129,8 @@ def main(method, device):
         num_particles=20
     )
 
-    pets(env, agent, dynamics_model, num_trials,
-         cfg, ensemble_size, replay_buffer, method)
+    _ = pets(env, agent, dynamics_model, num_trials,
+             cfg, ensemble_size, replay_buffer, method)
 
     return dynamics_model
 

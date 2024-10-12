@@ -91,10 +91,16 @@ class SymbolicModelTrainer:
             reg_next_obs = self.dynamics_model.model.reg_next_obs[i]
             reg_next_obs.fit(X_train[:, :-out_size],
                              y_train_next_obs[:, i])
-            train_scores.append(reg_next_obs.score(
-                X_train[:, :-out_size], y_train_next_obs[:, i]))
-            val_scores.append(reg_next_obs.score(
-                X_val[:, :-out_size], y_val_next_obs[:, i]))
+            r_2_train = reg_next_obs.score(
+                X_train[:, :-out_size], y_train_next_obs[:, i])
+            mse_train = (
+                1 - r_2_train)*np.mean((y_train_next_obs[:, i] - np.mean(y_train_next_obs[:, i]))**2)
+            r_2_val = reg_next_obs.score(
+                X_val[:, :-out_size], y_val_next_obs[:, i])
+            mse_val = (
+                1 - r_2_val)*np.mean((y_val_next_obs[:, i] - np.mean(y_val_next_obs[:, i]))**2)
+            train_scores.append(mse_train)
+            val_scores.append(mse_val)
             print(reg_next_obs.get_model_string(reg_next_obs.model_))
 
         # fitting reward

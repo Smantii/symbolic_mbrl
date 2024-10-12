@@ -119,18 +119,24 @@ In our case, SR is handled with Genetic Programming (GP) \cite{koza1994genetic, 
 \paragraph{Crossover and Mutation} Genetic operations consists of \textsl{crossover} and \textsl{mutation}. The most common crossover used is the \textsl{subtree crossover} (or \textsl{one-point crossover}): given two parent trees, a random subtree and a crossover point are chosen for both; then, two new trees are generated, named \textsl{offsprings}, replacing the subtree rooted in the first parent with the one in the second parent and vice-versa.
 Instead, the most common mutation creates an offspring for a given parent tree by replacing a (randomly chosen) subtree with a newly generated subtree. 
 
-
 \section{Experiments and implementations details}
 \textcolor{red}{Add intro + libraries used}
 
 
 \subsection{Simple 1-dimensional MDP}
 The following simple 1-dimensional MDP, with episode length 10, is considered
-\begin{equation}
-	s_{t+1} := s_t + a_t, \quad 	r_t := \cos(2\pi s_{t+1})\exp(|s_{t+1}|/3).
-\end{equation}
+\begin{align}
+	&s_{t+1} := s_t + a_t, \label{eq: simple_1dmpd_dynamics}\\ 
+	&r_t := \cos(2\pi s_{t+1})\exp(|s_{t+1}|/3). \label{eq: simple_1dmpd_reward}
+\end{align}
 
-In this case, the goal is learning both the dynamics and the reward function. \textcolor{red}{Continue from here}
+In this case, the goal is learning both the dynamics \eqref{eq: simple_1dmpd_dynamics} and the reward function \eqref{eq: simple_1dmpd_reward}. \textcolor{red}{Continue from here}
+
+\begin{align}
+	&s_{t+1} := s_t + a_t,\\
+	&r_t := 1.0\exp(|0.333s_{t+1}|)\sin(6.283s_{t+1} - |-0.023 s_t + \sin(0.023 s_t) + 1.571|)
+\end{align}
+
 
 \begin{figure}
 	\centering

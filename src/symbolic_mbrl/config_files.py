@@ -5,7 +5,6 @@ trial_length = int(5e1)
 num_trials_nn = 10
 
 device_nn = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-# device_nn = 'cpu'
 
 # Everything with "???" indicates an option with a missing value.
 # Our utility functions will fill in these details using the
