@@ -173,9 +173,9 @@ if __name__ == "__main__":
     fig = plt.figure(figsize=fig_dim)
     plt.plot(data[:, 0], reward_fn(
         data[:, 1], data[:, 0]), label="True", c="#377eb8")
-    plt.plot(data[:, 0], reward_sr, label="SR-Pets", c="#e41a1c")
-    plt.plot(data[:, 0], reward_nn, label="NN-Pets", c="#4daf4a")
+    plt.plot(data[:, 0], reward_sr, label="SR-PETS", c="#e41a1c")
+    plt.plot(data[:, 0], reward_nn, label="NN-PETS", c="#4daf4a")
     plt.legend()
-    plt.xlabel("s_t")
+    plt.xlabel(r"$s_t$")
     plt.ylabel("Reward")
-    plt.savefig("simple1dmp_pets.pdf", dpi=300)
+    plt.savefig("simple1dmdp_pets.pdf", dpi=300)

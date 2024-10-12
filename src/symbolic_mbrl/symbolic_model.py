@@ -17,6 +17,8 @@ class SymbolicModel(Ensemble):
         self.generations = generations
         self.max_length = max_length
         self.max_depth = max_depth
+        if self.learn_reward:
+            self.out_size -= 1
         self._init_regressors()
 
     def _init_regressors(self):
@@ -40,8 +42,8 @@ class SymbolicModel(Ensemble):
             next_obs[:, i] = self.reg_next_obs[i].predict(x)
         if self.learn_reward:
             obs_act_next_obs = np.hstack((x, next_obs.reshape(-1, 1)))
-            reward = self.reg_reward.predict(obs_act_next_obs)
-            preds = np.vstack((next_obs, reward)).T
+            reward = self.reg_reward.predict(obs_act_next_obs).reshape(-1, 1)
+            preds = np.hstack((next_obs, reward))
         else:
             preds = next_obs
         return torch.from_numpy(preds), None
