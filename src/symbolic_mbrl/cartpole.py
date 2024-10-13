@@ -86,14 +86,14 @@ if __name__ == "__main__":
     all_mse_sr = np.zeros((10, num_runs))
     all_mse_nn = np.zeros((10, num_runs))
 
-    # for i in range(num_runs):
-    #    all_reward_sr[:, i], all_mse_sr[:, i] = main("SR", device_sr)
-    #    all_reward_nn[:, i], all_mse_nn[:, i] = main("NN", device_nn)
+    for i in range(num_runs):
+        all_reward_sr[:, i], all_mse_sr[:, i] = main("SR", device_sr)
+        all_reward_nn[:, i], all_mse_nn[:, i] = main("NN", device_nn)
 
-    # np.save("cartpole_rewards_sr.npy", all_reward_sr)
-    # np.save("cartpole_mse_sr.npy", all_mse_sr)
-    # np.save("cartpole_rewards_nn.npy", all_reward_nn)
-    # np.save("cartpole_mse_nn.npy", all_mse_nn)
+    np.save("cartpole_rewards_sr.npy", all_reward_sr)
+    np.save("cartpole_mse_sr.npy", all_mse_sr)
+    np.save("cartpole_rewards_nn.npy", all_reward_nn)
+    np.save("cartpole_mse_nn.npy", all_mse_nn)
 
     num_training_data = 10*np.arange(1, 11)
 
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     # Figure width in inches
     fig_width_in = width * inches_per_pt
 
-    fig_dim = (fig_width_in, 3.)
+    fig_dim = (fig_width_in, 2.7)
 
     fig, ax = plt.subplots(nrows=1, ncols=2, figsize=fig_dim)
 

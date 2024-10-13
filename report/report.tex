@@ -86,6 +86,14 @@
 	\maketitle
 
 \section{Introduction}
+This project, highly inspired by \cite{kamienny2022symbolic}, aims to investigate the performance of Symbolic Regression (SR) in Model-Based Reinforcement Learning (MBRL). Indeed, the most common MBRL algorithm choices consist of black-box methods, known to be data-hungry and prone to overfitting when a small amount of data is available. In this project, it has been shown empirically that SR outperforms standard MBRL on simple environments, providing to the user interpretable and simple models.
+This study is subdivided as follows:
+\begin{itemize}
+	\item section 2 introduces the main components of MBRL;
+	\item section 3 deals with a short description of SR;
+	\item section 4 is dedicated to experiments and implementation details;
+	\item finally, section 5 concludes the work with a short discussion. 
+\end{itemize}
 
 \section{Model-Based Reinforcement Learning}
 Reinforcement Learning (RL), contrarily to standard Supervised Learning, requires a continue interaction with data to update the policy. Usually, model-free RL is employed to optimize the policy, where the agent can only use the data sampled interacting with the real environment. In particular, RL algorithms with high sample complexity are non-manageable in a real-world scenario due to its computational cost. An alternative is presented by the so-called Model-Based Reinforcement Learning (MBRL) \cite{moerland2023model}, where apart from optimizing policy the environment model must be learned. In real-world scenario, having an environment model drastically reduces the complexity of generating new training samples for RL algorithms.
@@ -120,7 +128,8 @@ In our case, SR is handled with Genetic Programming (GP) \cite{koza1994genetic, 
 Instead, the most common mutation creates an offspring for a given parent tree by replacing a (randomly chosen) subtree with a newly generated subtree. 
 
 \section{Experiments and implementations details}
-\textcolor{red}{Add intro + libraries used}
+SR for MBRL performance is assessed through 2 different experiments, inspired by \cite{kamienny2022symbolic}. In both of them, a comparison with MBRL through Neural Networks (NN) is made. The MBRL algorithm chosen for SR and NN is the Probablistic Ensembles with Trajectory Sampling (PETS) \cite{chua2018deep}, implemented with MBRL-lib \cite{pineda2021mbrl} for NN and Operon \cite{burlacu2020operon} for SR. The action optimizer used is the Cross-Entropy Method (CEM) \cite{de2005tutorial}.
+The implementation of this project is open-source and it is accessible through a public GitHub repository \cite{???} \textcolor{red}{link github repo}.
 
 
 \subsection{Simple 1-dimensional MDP}
@@ -131,16 +140,18 @@ The following simple 1-dimensional MDP, with episode length 10, is considered
 	&r_t := \cos(2\pi s_{t+1})\exp(|s_{t+1}|/3). \label{eq: simple_1dmpd_reward}
 \end{align}
 
-In this case, the goal is learning both the dynamics eq.~\eqref{eq: simple_1dmpd_dynamics} and the reward function eq.~\eqref{eq: simple_1dmpd_reward}. \textcolor{red}{add details on training data used}
+In this case, the goal is learning both the dynamics eq.~\eqref{eq: simple_1dmpd_dynamics} and the reward function eq.~\eqref{eq: simple_1dmpd_reward}. The training (500) and validation (100) transitions were collected by sampling uniformly in the action space [-1,1] (random policy). A single run of PETS was used for both SR and NN.
 
 \paragraph{SR hyperparameters} The following hyperparameters are used: 10 optimizer iterations, population size 5000, 10000 generations, \texttt{add,sub,mul,div,constant,variable,} \texttt{sin,exp,abs} as allowed symbols and 32 threads. Note that to complicate the problem \texttt{cos} is not in the primitive set.
 
 \paragraph{NN hyperparameters} A standard Multi-Layer Perceptron (MLP) is considered with the following hyperparameters: 4 hidden layers with 200 nodes each, SiLU activation function, Adam optimizer with 2000 epochs, batch size 256, patience epochs 25, learning rate $7.5e-4$ and weight decay $3e-5$.
 
+\paragraph{Action Optimizer} CEM is used with planning horizon 3, 10 iterations, elite ratio 0.1, population size 1000, alpha 0.1 and clipped normal action distribution.
+
 \paragraph{Results} Figure~\ref{fig: simple_1dmdp} demonstrates that SR learned solution generalizes better outside the training region, while the NN model overfits in the training distribution. SR learned the following models (rounded to the first $3$ decimal digits):
 \begin{align}
 	&s_{t+1} = 1.0s_t + 1.0a_t, \label{eq: sr_simple_1dmdp_dynamics}\\
-	&r_t = 1.0\exp(|0.333s_{t+1}|)\sin(6.283s_{t+1} - |-0.023 s_t + \sin(0.023 s_t) + 1.571|).\label{eq: sr_simple_1dmdp_reward}
+	&r_t = 1.0\exp(|0.333s_{t+1}|)\sin(6.283s_{t+1} - \left|-0.023 s_t + \sin(0.023 s_t) + 1.571\right|).\label{eq: sr_simple_1dmdp_reward}
 \end{align}
 
 Note that eq.~\eqref{eq: simple_1dmpd_dynamics} coincides with eq.~\eqref{eq: simple_1dmpd_dynamics}, while eq.~\eqref{eq: sr_simple_1dmdp_reward} is slightly different than eq.~\eqref{eq: simple_1dmpd_reward}. However, the first of the two factors matches completely with the ground truth, while the latter is approximately $\sin(2\pi s_{t+1} + 1.571)$ using that $6.283\approx 2\pi$ and that $sin(x) \approx x$ for $x>0$ sufficiently small. A similar model for the reward function was also found in the original paper \cite{kamienny2022symbolic}.
@@ -153,29 +164,44 @@ Note that eq.~\eqref{eq: simple_1dmpd_dynamics} coincides with eq.~\eqref{eq: si
 \end{figure}
 
 \subsection{Cartpole}
+The continuous Cartpole \cite{brockman2016openai, todorov2012mujoco} is considered, where the agent's action $a$ influences the system's state based on the following equations \cite{florian2007correct}:
 
 \begin{align}
-	&\ddot{\theta} = \frac{g\sin(\theta) + \cos(\theta)\left(\frac{-K_{\rm mag} a - m_p l \dot{\theta}^2\sin(\theta)}{m_c + m_p}\right)}{l\left(\frac{4}{3} - \frac{m_p\cos^2(\theta)}{m_c+m_p}\right)}\\
-	& \ddot{x} = \frac{K_{\rm mag} a + m_pl(\dot{\theta}^2\sin(\theta) - \ddot{\theta}\cos(\theta))}{m_c + m_p}
+	&\ddot{\theta} = \frac{g\sin(\theta) + \cos(\theta)\left(\frac{-K_{\rm mag} a - m_p l \dot{\theta}^2\sin(\theta)}{m_c + m_p}\right)}{l\left(\frac{4}{3} - \frac{m_p\cos^2(\theta)}{m_c+m_p}\right)}, \label{eq: cartpole_theta}\\
+	& \ddot{x} = \frac{K_{\rm mag} a + m_pl(\dot{\theta}^2\sin(\theta) - \ddot{\theta}\cos(\theta))}{m_c + m_p} \label{eq: cartpole_x},
 \end{align}
 
+where $g,K_{\rm mag}, m_p, m_c$ and $l$ are constants. The agent state is $s_t := (x_t, \theta_t, \dot{x}_t, \dot{\theta}_t)$, and the task is purely related to dynamics modeling, since both termination and reward functions are known to the agent \cite{pineda2021mbrl, chua2018deep}. 
 
-\paragraph{SR hyperparameters} As in \ref{sec: simple_1_dmdp} but with allowed symbols \texttt{add,sub,mul,div,constant,} \texttt{variable,sin,cos,pow}.
+The initial training (10) and validation (40) transition were collected using a random policy. Then, PETS was run for 10 iterations, and in each of those 10 transitions using the current policy. This procedure was repeated 3 times and the results were averaged accordingly.
+
+\paragraph{SR hyperparameters} As in \ref{sec: simple_1_dmdp} but with allowed symbols \texttt{add,sub,mul,div,constant,} \texttt{variable,sin,cos,square}.
 
 \paragraph{NN hyperparameters} As in \ref{sec: simple_1_dmdp}.
 
-\paragraph{Results}
+\paragraph{Action Optimizer} CEM is used with planning horizon 15, 5 iterations, elite ratio 0.1, population size 350, alpha 0.1.
+
+\paragraph{Results} Also in this case SR outperforms NN, being able to learn a good controller using only 10 training transitions (Figure~\ref{fig: cartpole}A). The SR models found at the end of a random PETS episode are the following
+
+\begin{align}
+	&x_{t+1} = 1.0x_t + 0.020\dot{x}_t,\\
+	&\theta_{t+1}=(\theta_t - 0.014\dot{x}_t + 0.195a_t)\cos(0.228\dot{x}_t),\\
+	&\dot{x}_{t+1} = 1.0\dot{x}_t + 0.020 \dot{\theta}_t,\\
+	&\dot{\theta}_{t+1} = 0.315\dot{x}_t +1.0\dot{\theta}_t - 3.87a_t\cos(0.311\dot{x}_t) + 3.577a_t - 0.000.
+\end{align}
+
+Even though we can recognize some similarities with the ground-truth eq.~\eqref{eq: cartpole_theta}-\eqref{eq: cartpole_x}, \textsl{e.g.} the time-discretization interval 0.02, the SR models are slightly different. This can be explained by the fact that a good candidate can have large validation MSE (Figure~\ref{fig: cartpole}B).
 
 \begin{figure}
 	\centering
 	\includegraphics{cartpole.pdf}
-	\caption{??}
+	\caption{Evolution of cumulative reward (A) and validation MSE (B) as the number of training transitions increases. The results were averaged over 3 episodes with 3 random seeds.}
 	\label{fig: cartpole}
 \end{figure}
 
 
 \section{Conclusion and discussion}
-
+This project demonstrates that SR-based MBRL can be more effective than standard MBRL in simple yet challenging environments, discovering models with many less parameters and better generalization capabilities. Also, interpretability of SR models can help scientists to manage and explain more easily the learned dynamics/rewards.
 
 \bibliographystyle{ieeetr}
 \begin{thebibliography}{10}
@@ -198,11 +224,32 @@ Note that eq.~\eqref{eq: simple_1dmpd_dynamics} coincides with eq.~\eqref{eq: si
 	
 	\bibitem{koza1994genetic}
 	J.R.~Koza, ``Genetic programming as a means for programming computers by natural selection'', 
-	{\em Statistics and Computing}, vol.~4, 1994.
+	{\em Statistics and Computing}, 1994.
 	
 	\bibitem{o2009riccardo}
 	R.~Poli et al., ``A Field Guide to Genetic Programming''.
 	\newblock Published via \texttt{http://lulu.com} and freely available at \texttt{http://www.gp-field-guide.org.uk}, 2008.
+	
+	\bibitem{barto1983neuronlike}
+	A.G.~Barto, R.S.~Sutton,C.W.~Anderson, ``Neuronlike adaptive elements that can solve difficult learning control problems''. {\em IEEE transactions on systems, man, and cybernetics}, 1983.
+	
+	\bibitem{florian2007correct}
+	R.V~Florian, ``Correct equations for the dynamics of the cart-pole system''. {\em Center for Cognitive and Neural Studies (Coneural)}, 2007.
+	
+	\bibitem{brockman2016openai}
+	G.~Brockman, V.~Cheung, L.~Pettersson, J.~Schneider, J.~Schulman, J.~Tang, W.~Zaremba, ``Openai gym''. {\em arXiv preprint arXiv:1606.01540}, 2016.
+	
+	\bibitem{todorov2012mujoco}
+	E.~Todorov, T.~Erez, Y.~Tassa, ``Mujoco: A physics engine for model-based control''. {\em IEEE/RSJ International Conference on Intelligent Robots and Systems}, 2012
+	
+	\bibitem{chua2018deep}
+	K.~Chua, R.~Calandra, R.~McAllister, Sergey.~Levine, ``Deep reinforcement learning in a handful of trials using probabilistic dynamics models''. {\em Advances in Neural Information Processing Systems}, 2018.
+	
+	\bibitem{burlacu2020operon}
+	B.~Burlacu, G.~Kronberger, M.~Kommenda, ``Operon C++: An efficient genetic programming framework for symbolic regression". {\em Proceedings of the 2020 Genetic and Evolutionary Computation Conference Companion, GECCO}  2020.
+	
+	\bibitem{de2005tutorial}
+	P.T.~De Boer, D.P.~Kroese, S.~Mannor, R.Y.~Rubinstein, ``A tutorial on the cross-entropy method". {\em Annals of operations research}, 2005.
 	
 \end{thebibliography}
 \end{document}
