@@ -86,7 +86,8 @@
 	\maketitle
 
 \section{Introduction}
-This project, highly inspired by \cite{kamienny2022symbolic}, aims to investigate the performance of Symbolic Regression (SR) in Model-Based Reinforcement Learning (MBRL). Indeed, the most common MBRL algorithm choices consist of black-box methods, known to be data-hungry and prone to overfitting when a small amount of data is available. In this project, it has been shown empirically that SR outperforms standard MBRL on simple environments, providing to the user interpretable and simple models.
+This project, highly inspired by \cite{kamienny2022symbolic}, aims to investigate the performance of Symbolic Regression (SR) in Model-Based Reinforcement Learning (MBRL). Indeed, the most common MBRL algorithm choices consist of black-box methods, known to be data-hungry and prone to overfitting when a small amount of data is available.
+In this project, it has been shown empirically that SR outperforms standard MBRL on simple environments, providing to the user interpretable and simple models.
 This study is subdivided as follows:
 \begin{itemize}
 	\item section 2 introduces the main components of MBRL;
@@ -96,7 +97,7 @@ This study is subdivided as follows:
 \end{itemize}
 
 \section{Model-Based Reinforcement Learning}
-Reinforcement Learning (RL), contrarily to standard Supervised Learning, requires a continue interaction with data to update the policy. Usually, model-free RL is employed to optimize the policy, where the agent can only use the data sampled interacting with the real environment. In particular, RL algorithms with high sample complexity are non-manageable in a real-world scenario due to its computational cost. An alternative is presented by the so-called Model-Based Reinforcement Learning (MBRL) \cite{moerland2023model}, where apart from optimizing policy the environment model must be learned. In real-world scenario, having an environment model drastically reduces the complexity of generating new training samples for RL algorithms.
+Reinforcement Learning (RL), contrarily to standard Supervised Learning, requires a continue interaction with data to update the policy. Usually, model-free RL is employed to optimize the policy, where the agent can only use the data sampled interacting with the real environment. In particular, RL algorithms with high sample complexity are non-manageable in a real-world scenario due to its computational cost. An alternative is presented by the so-called Model-Based Reinforcement Learning (MBRL) \cite{moerland2023model}, where apart from optimizing policy the environment model must be learned. When using real-world data, having an environment model drastically reduces the complexity of generating new training samples for RL algorithms.
 In the following, we briefly overview the main components of MBRL. A more extensive treatment can be found in \cite{moerland2023model, pineda2021mbrl,luo2024survey}. 
 
 MBRL restates the problem as a Markov Decision Process (MDP) \cite{puterman2014}. A MDP is a tuple $\{\mathcal{S}, \mathcal{A}, \mathcal{T}, \mathcal{R}, p(s_0), \gamma\}$, where $\mathcal{S}$ and $\mathcal{A}$ are, respectively, the state and the action space, $\mathcal{T}: \mathcal{S} \times \mathcal{A} \rightarrow p(\mathcal{S})$ is the \textsl{transition function}, $\mathcal{R}: \mathcal{S} \times \mathcal{A} \times \mathcal{S} \rightarrow \rr$ is the \textsl{reward function}, $p(s_0)$ is the initial state distribution and $\gamma \in [0,1]$ is a discount parameter.
@@ -113,23 +114,26 @@ MBRL approaches repeat the following two steps iteratively:
 	\begin{equation}
 		f^* = \argmax_{f \in \mathcal{F}} \mathbb{E}_{(s_t, a_t, s_{t+1}) \sim \mathcal{D}} \mathcal{L}(s_{t+1}, f(s_t, a_t)),
 	\end{equation}
-	where $\mathcal{F}$ is a general family of functions (for instance Neural Networks) and $\mathcal{L}$ is a loss function. Note that with the same data reward and termination functions can be learned reward as well;
-	\item simulate the transition with the learned model $f^*$ and optimize the policy maximizing the expected sum of rewards like in \eqref{eq: expected_sum_rewards}.
+	where $\mathcal{F}$ is a general family of functions (for instance Neural Networks) and $\mathcal{L}$ is a loss function. Note that with the same data reward and termination functions can be learned as well;
+	\item simulate the transitions with the learned model $f^*$ and optimize the policy maximizing the expected sum of rewards like in \eqref{eq: expected_sum_rewards}.
 \end{enumerate}
+
+This strategy allows to learn the dynamic model and optimize the policy at the same time.
 
 \section{Symbolic Regression}
 SR consists of finding a mathematical expressions that best fits a given dataset without assuming a particular structure of the expression. 
-In our case, SR is handled with Genetic Programming (GP) \cite{koza1994genetic, o2009riccardo}. GP is an evolutionary strategy that explores a space of candidate models/functions by iteratively updating an initial population through genetic operations. A candidate model is also called \textsl{individual} and can be easily represented by a tree, in which each node is either a \textsl{primitive} (\textsl{i.e.} an operator) or a \textsl{terminal} (\textsl{i.e.} a variable or constant).
+In this project, SR is handled with Genetic Programming (GP) \cite{koza1994genetic, o2009riccardo}. GP is an evolutionary strategy that explores a space of candidate models/functions by iteratively updating an initial population through genetic operations. A candidate model is also called \textsl{individual} and can be easily represented by a tree, in which each node is either a \textsl{primitive} (\textsl{i.e.} an operator) or a \textsl{terminal} (\textsl{i.e.} a variable or constant).
 \paragraph{Initialization} The population is typically initialized randomly. Some well-known techniques are the \textsl{full} and the \textsl{grow} method (see Section 2.1 in \cite{o2009riccardo}), and a combination of those gives rise to \textsl{ramped half and half}. Each of them assumes that the starting population contains individuals that do not exceed a fixed maximum depth.
 
-\paragraph{Selection} Usually genetic operations are performed on individuals that are selected based on fitness, \textsl{i.e.} that are ``probably good''. One way to do so is \textsl{tournament selection}. This consists of performing a tournament for each $k$ (tournament size) individuals, competing in terms of their fitnesses. The higher the score in these tournaments, the higher the probability for these individuals to be chosen. In our method, $k=2$ and we assign a non-zero probability to pick the loser instead of the winner in each tournament. This is calibrated in the hyperparameter selection phase. 
+\paragraph{Selection} Usually genetic operations are performed on individuals that are selected based on fitness, \textsl{i.e.} that are ``probably good''. One way to do so is \textsl{tournament selection}. This consists of performing a tournament for each $k$ (tournament size) individuals, competing in terms of their fitnesses. The higher the score in these tournaments, the higher the probability for these individuals to be chosen.
 
 \paragraph{Crossover and Mutation} Genetic operations consists of \textsl{crossover} and \textsl{mutation}. The most common crossover used is the \textsl{subtree crossover} (or \textsl{one-point crossover}): given two parent trees, a random subtree and a crossover point are chosen for both; then, two new trees are generated, named \textsl{offsprings}, replacing the subtree rooted in the first parent with the one in the second parent and vice-versa.
 Instead, the most common mutation creates an offspring for a given parent tree by replacing a (randomly chosen) subtree with a newly generated subtree. 
 
 \section{Experiments and implementations details}
 SR for MBRL performance is assessed through 2 different experiments, inspired by \cite{kamienny2022symbolic}. In both of them, a comparison with MBRL through Neural Networks (NN) is made. The MBRL algorithm chosen for SR and NN is the Probablistic Ensembles with Trajectory Sampling (PETS) \cite{chua2018deep}, implemented with MBRL-lib \cite{pineda2021mbrl} for NN and Operon \cite{burlacu2020operon} for SR. The action optimizer used is the Cross-Entropy Method (CEM) \cite{de2005tutorial}.
-The implementation of this project is open-source and it is accessible through a public GitHub repository \cite{???} \textcolor{red}{link github repo}.
+The implementation of this project is open-source and it is accessible through a public GitHub repository\footnote{\href{https://github.com/Smantii/symbolic\_mbrl}{https://github.com/Smantii/symbolic\_mbrl}}.
+The hyperparameters selection is based on \cite{kamienny2022symbolic}.
 
 
 \subsection{Simple 1-dimensional MDP}
@@ -142,9 +146,9 @@ The following simple 1-dimensional MDP, with episode length 10, is considered
 
 In this case, the goal is learning both the dynamics eq.~\eqref{eq: simple_1dmpd_dynamics} and the reward function eq.~\eqref{eq: simple_1dmpd_reward}. The training (500) and validation (100) transitions were collected by sampling uniformly in the action space [-1,1] (random policy). A single run of PETS was used for both SR and NN.
 
-\paragraph{SR hyperparameters} The following hyperparameters are used: 10 optimizer iterations, population size 5000, 10000 generations, \texttt{add,sub,mul,div,constant,variable,} \texttt{sin,exp,abs} as allowed symbols and 32 threads. Note that to complicate the problem \texttt{cos} is not in the primitive set.
+\paragraph{SR hyperparameters} The following hyperparameters are used: 10 optimizer iterations, population size 5000, 10000 generations, \texttt{add,sub,mul,div,constant,variable,} \texttt{sin,exp,abs} as allowed symbols and 32 threads. Note that to further complicate the problem \texttt{cos} is not in the primitive set.
 
-\paragraph{NN hyperparameters} A standard Multi-Layer Perceptron (MLP) is considered with the following hyperparameters: 4 hidden layers with 200 nodes each, SiLU activation function, Adam optimizer with 2000 epochs, batch size 256, patience epochs 25, learning rate $7.5e-4$ and weight decay $3e-5$.
+\paragraph{NN hyperparameters} A standard Multi-Layer Perceptron (MLP) is considered with the following hyperparameters: 4 hidden layers with 200 nodes each, SiLU activation function, Adam optimizer with 2000 epochs, batch size 256, patience epochs 25, learning rate $7.5\times10^{-4}$ and weight decay $3\times10^{-5}$.
 
 \paragraph{Action Optimizer} CEM is used with planning horizon 3, 10 iterations, elite ratio 0.1, population size 1000, alpha 0.1 and clipped normal action distribution.
 
@@ -154,7 +158,7 @@ In this case, the goal is learning both the dynamics eq.~\eqref{eq: simple_1dmpd
 	&r_t = 1.0\exp(|0.333s_{t+1}|)\sin(6.283s_{t+1} - \left|-0.023 s_t + \sin(0.023 s_t) + 1.571\right|).\label{eq: sr_simple_1dmdp_reward}
 \end{align}
 
-Note that eq.~\eqref{eq: simple_1dmpd_dynamics} coincides with eq.~\eqref{eq: simple_1dmpd_dynamics}, while eq.~\eqref{eq: sr_simple_1dmdp_reward} is slightly different than eq.~\eqref{eq: simple_1dmpd_reward}. However, the first of the two factors matches completely with the ground truth, while the latter is approximately $\sin(2\pi s_{t+1} + 1.571)$ using that $6.283\approx 2\pi$ and that $sin(x) \approx x$ for $x>0$ sufficiently small. A similar model for the reward function was also found in the original paper \cite{kamienny2022symbolic}.
+Note that eq.~\eqref{eq: simple_1dmpd_dynamics} coincides with eq.~\eqref{eq: simple_1dmpd_dynamics}, while eq.~\eqref{eq: sr_simple_1dmdp_reward} is slightly different than eq.~\eqref{eq: simple_1dmpd_reward}. However, the first of the two factors matches completely with the ground truth, while the latter is approximately $\sin(2\pi s_{t+1} + 1.571)$ using that $6.283\approx 2\pi$ and that $\sin(x) \approx x$ for $x$ sufficiently close to $0$. A similar model for the reward function was also found in the original paper \cite{kamienny2022symbolic}.
 
 \begin{figure}
 	\centering
@@ -173,7 +177,7 @@ The continuous Cartpole \cite{brockman2016openai, todorov2012mujoco} is consider
 
 where $g,K_{\rm mag}, m_p, m_c$ and $l$ are constants. The agent state is $s_t := (x_t, \theta_t, \dot{x}_t, \dot{\theta}_t)$, and the task is purely related to dynamics modeling, since both termination and reward functions are known to the agent \cite{pineda2021mbrl, chua2018deep}. 
 
-The initial training (10) and validation (40) transition were collected using a random policy. Then, PETS was run for 10 iterations, and in each of those 10 transitions using the current policy. This procedure was repeated 3 times and the results were averaged accordingly.
+The initial training (10) and validation (40) transition were collected using a random policy. Then, PETS was run for 10 iterations, and in each of those 10 transitions where added to the training data using the current policy. This procedure was repeated 3 times and the results were averaged accordingly.
 
 \paragraph{SR hyperparameters} As in \ref{sec: simple_1_dmdp} but with allowed symbols \texttt{add,sub,mul,div,constant,} \texttt{variable,sin,cos,square}.
 
@@ -201,7 +205,7 @@ Even though we can recognize some similarities with the ground-truth eq.~\eqref{
 
 
 \section{Conclusion and discussion}
-This project demonstrates that SR-based MBRL can be more effective than standard MBRL in simple yet challenging environments, discovering models with many less parameters and better generalization capabilities. Also, interpretability of SR models can help scientists to manage and explain more easily the learned dynamics/rewards.
+This project demonstrates that SR-based MBRL can be more effective than standard MBRL in simple yet challenging environments, discovering models with many less parameters and better generalization capabilities. Also, interpretability of SR models can help scientists to manage and explain more easily the learned dynamics/rewards, paving the way to use cheaply and effectively these models in real-world scenarios.
 
 \bibliographystyle{ieeetr}
 \begin{thebibliography}{10}
