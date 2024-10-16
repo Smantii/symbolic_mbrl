@@ -1,5 +1,5 @@
 # Symbolic Model Based Reinforcement Learning
-This repository contains the code used for the project of the PhD course [*Neural Networks and Deep Learning*](https://retis.sssup.it/~giorgio/courses/neural/nn.html). The project goal was reproducing and deeply understanding the paper *Symbolic Model-Based Reinforcement Learning* by P. A. Karmienny and S. Lamprier.
+This repository contains the code used for the project of the PhD course [*Neural Networks and Deep Learning*](https://retis.sssup.it/~giorgio/courses/neural/nn.html). The project goal was reproducing and deeply understanding the paper *Symbolic Model-Based Reinforcement Learning* by P. A. Kamienny and S. Lamprier.
 Thus, this project is *not* an original work, it is only meant for didactic reasons.
 
 ## Installation
